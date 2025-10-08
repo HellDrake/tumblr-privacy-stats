@@ -1,5 +1,18 @@
-import geoip from "geoip-lite";
 import { config } from "./config.js";
+import { createRequire } from "module";
+
+let _geoip = undefined;
+function getGeo() {
+  if (_geoip !== undefined) return _geoip;
+  try {
+    const require = createRequire(import.meta.url);
+    // geoip-lite may fail to load in some serverless environments; fallback to null
+    _geoip = require("geoip-lite");
+  } catch (_) {
+    _geoip = null;
+  }
+  return _geoip;
+}
 
 // Returns a 2-letter ISO country code, or 'ZZ' for unknown.
 export function countryFromRequest(req) {
@@ -27,13 +40,12 @@ export function countryFromRequest(req) {
   // Geolocate in-memory; do not persist IP anywhere
   let country = "ZZ";
   try {
-    const lookup = geoip.lookup(ip);
-    if (lookup && lookup.country) {
-      country = lookup.country;
+    const geoip = getGeo();
+    if (geoip && typeof geoip.lookup === "function") {
+      const lookup = geoip.lookup(ip);
+      if (lookup && lookup.country) country = lookup.country;
     }
-  } catch (_) {
-    // silently ignore
-  }
+  } catch (_) { /* ignore */ }
 
   // Explicitly drop the ip variable reference
   ip = undefined; // ensure not used beyond this point
