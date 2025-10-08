@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import { config } from "./config.js";
 import { countryFromRequest } from "./geo.js";
 import { AggregateStore } from "./store.js";
+import { MemoryAggregateStore } from "./storeMemory.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,7 +49,15 @@ function cleanupDedup() {
 }
 setInterval(cleanupDedup, Math.min(DEDUP_TTL_MS, 5 * 60 * 1000)).unref();
 
-const store = new AggregateStore();
+const store = (() => {
+  const backend = config.storeBackend;
+  if (backend === 'memory') return new MemoryAggregateStore();
+  // On Vercel, prefer memory unless a DATA_FILE is explicitly provided
+  if ((process.env.VERCEL === '1' || process.env.VERCEL === 'true') && !process.env.DATA_FILE) {
+    return new MemoryAggregateStore();
+  }
+  try { return new AggregateStore(); } catch (_) { return new MemoryAggregateStore(); }
+})();
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 

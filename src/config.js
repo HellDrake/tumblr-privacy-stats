@@ -11,6 +11,7 @@ export const config = {
   cookieSameSite: process.env.COOKIE_SAMESITE || "None",
   retentionDays: parseInt(process.env.RETENTION_DAYS || "90", 10),
   allowCountryOverride: process.env.ALLOW_COUNTRY_OVERRIDE === "true" || false,
-  dataFile: process.env.DATA_FILE || "data/aggregates.json"
+  dataFile: process.env.DATA_FILE || "data/aggregates.json",
+  storeBackend: process.env.STORE_BACKEND || "file" // 'file' | 'memory' | future: 'kv' | 'pg'
 };
 
