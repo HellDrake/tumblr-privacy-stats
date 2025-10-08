@@ -5,10 +5,10 @@
     }
   },
   "rewrites": [
+    { "source": "/widget.js", "destination": "/public/widget.js" },
     { "source": "/collect", "destination": "/api/index" },
     { "source": "/stats", "destination": "/api/index" },
     { "source": "/session/clear", "destination": "/api/index" },
     { "source": "/health", "destination": "/api/index" }
   ]
 }
-
